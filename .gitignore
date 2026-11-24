@@ -1,0 +1,9 @@
+.zig-cache/
+zig-cache/
+zig-out/
+__pycache__/
+*.pyc
+benchmark_results.csv
+ecs_benchmark_results.csv
+.DS_Store
+.toolchain/

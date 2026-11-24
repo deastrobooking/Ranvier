@@ -1,0 +1,29 @@
+name: Ranvier Core CI
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        mode: [debug, safe]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.1
+      - run: zig version
+      - run: zig fmt --check build.zig build.zig.zon src tests examples benchmarks
+      - run: zig build test -Doptimize=${{ matrix.mode }} --summary all
+      - run: zig build demo -Doptimize=${{ matrix.mode }}
+      - run: zig build ecs-demo -Doptimize=${{ matrix.mode }}
+      - run: zig build bench-ecs -Doptimize=fast
+      - run: zig build bench -Doptimize=fast
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/reference_checks.py
+      - run: python scripts/ecs_reference_checks.py
+      - run: python benchmarks/run.py --skip-build --runs 1 --warmups 0
+      - run: python benchmarks/run_ecs.py --skip-build --runs 1 --warmups 0
